@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiFibra | Dashboard CX & Mensajería 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--pink:#ff0091;--navy:#14243a;--ink:#243247;--muted:#748197;--bg:#f3f5f8;--line:#e7ebf1;--white:#fff;--teal:#20a69a;--orange:#f2a541}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:22px 3.2%;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:13px}.mark{width:42px;height:42px;border-radius:13px;background:var(--pink);display:grid;place-items:center;font-weight:900;font-size:20px}.brand h1{font-size:18px;margin:0}.brand p{margin:4px 0 0;color:#bdc8d8;font-size:12px}
+.header-right{text-align:right;font-size:12px;color:#d6dce6}.header-right strong{display:block;color:white;font-size:14px;margin-bottom:4px}
+main{max-width:1440px;margin:auto;padding:25px 3.2% 40px}.topline{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:20px}.topline h2{margin:0;font-size:23px;color:var(--navy)}.topline p{margin:6px 0 0;color:var(--muted);font-size:13px}
+select{padding:10px 13px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}.card{background:white;border:1px solid var(--line);border-radius:15px;padding:18px;box-shadow:0 4px 14px #172b4308}
+.kpi-label{font-size:12px;color:var(--muted);font-weight:650}.kpi-value{font-size:25px;font-weight:800;color:var(--navy);margin:10px 0 5px;letter-spacing:-.5px}.kpi-foot{font-size:11px;color:var(--muted)}.accent{height:3px;background:var(--pink);border-radius:5px;margin-top:13px;width:38px}
+.grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-bottom:16px}.gridEqual{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.card h3{font-size:15px;color:var(--navy);margin:0 0 5px}.sub{font-size:11px;color:var(--muted);margin:0 0 15px}.chartbox{height:285px;position:relative}.chartbox.small{height:260px}
+.insights{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.insight{border-left:3px solid var(--pink);background:#fff;border-radius:10px;padding:13px 14px;font-size:12px;line-height:1.5}.insight strong{display:block;color:var(--navy);margin-bottom:4px}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-weight:650;background:#fafbfc}td:first-child{font-weight:650;color:var(--navy)}
+.pill{display:inline-block;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:700;background:#fff0f8;color:var(--pink)}
+.notes{margin-top:16px;background:#fff8fc;border:1px solid #ffd4eb;border-radius:12px;padding:14px 16px;font-size:12px;line-height:1.55}.notes strong{color:var(--navy)}
+footer{text-align:center;color:#98a2b3;font-size:11px;margin-top:25px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.gridEqual{grid-template-columns:1fr}.insights{grid-template-columns:1fr}}
+@media(max-width:520px){header{align-items:flex-start}.header-right{display:none}.topline{align-items:flex-start;flex-direction:column}.kpis{gap:9px}.kpi-value{font-size:20px}.card{padding:14px}.chartbox{height:245px}}
+</style></head>
+<body>
+<header><div class="brand"><div class="mark">M</div><div><h1>MiFibra | CX & Mensajería</h1><p>Control presupuestal · Experiencia del cliente · Fidelización</p></div></div><div class="header-right"><strong>REPORTE DE GESTIÓN 2026</strong>Fuente: Excel “CX y Mensajeria - 10 2026” · S/ sin IGV</div></header>
+<main>
+<div class="topline"><div><h2>Dashboard ejecutivo</h2><p>Seguimiento de provisión, previsión de cierre y cobertura presupuestal</p></div><div><select id="monthSelect" aria-label="Seleccionar mes"></select></div></div>
+<section class="kpis">
+<div class="card"><div class="kpi-label">Provisión del mes</div><div class="kpi-value" id="kpiActual">—</div><div class="kpi-foot">Registro reportado en el Excel</div><div class="accent"></div></div>
+<div class="card"><div class="kpi-label">Previsión de cierre</div><div class="kpi-value" id="kpiForecast">—</div><div class="kpi-foot">Estimación del mes seleccionado</div><div class="accent"></div></div>
+<div class="card"><div class="kpi-label">Variación vs. previsión</div><div class="kpi-value" id="kpiVariance">—</div><div class="kpi-foot" id="varianceFoot">Provisión menos previsión</div><div class="accent"></div></div>
+<div class="card"><div class="kpi-label">Cobertura real / previsión</div><div class="kpi-value" id="kpiCoverage">—</div><div class="kpi-foot">100% representa cumplimiento exacto</div><div class="accent"></div></div>
+</section>
+<section class="grid2">
+<div class="card"><h3>Evolución mensual: provisión vs. previsión</h3><p class="sub">Montos en soles · valores de enero a diciembre</p><div class="chartbox"><canvas id="trendChart"></canvas></div></div>
+<div class="card"><h3>Composición del gasto previsto</h3><p class="sub">CX y Cobranza & Fidelización · mes seleccionado</p><div class="chartbox"><canvas id="mixChart"></canvas></div></div>
+</section>
+<section class="gridEqual">
+<div class="card"><h3>Cobertura presupuestal mensual</h3><p class="sub">Relación entre provisión y previsión de cierre</p><div class="chartbox small"><canvas id="coverageChart"></canvas></div></div>
+<div class="card"><h3>Detalle de provisión por proveedor / concepto</h3><p class="sub" id="detailSubtitle">Desglose de provisión · mes seleccionado</p><div class="chartbox small"><canvas id="detailChart"></canvas></div></div>
+</section>
+<div class="card" style="margin-bottom:16px"><h3>Resumen mensual</h3><p class="sub">Comparativo por línea de gestión · S/ sin IGV</p><div class="tablewrap"><table id="summaryTable"><thead><tr><th>Mes</th><th>Provisión</th><th>Previsión</th><th>Variación</th><th>Cobertura</th></tr></thead><tbody></tbody></table></div></div>
+<h3 style="font-size:15px;color:var(--navy);margin:22px 0 12px">Hallazgos del análisis</h3><section class="insights" id="insights"></section>
+<div class="notes"><strong>Observaciones y criterios de lectura</strong><ul style="margin:7px 0 0;padding-left:18px"><li>Los importes están expresados en soles y sin IGV, según el título del Excel.</li><li>Los valores de provisión de noviembre y diciembre aparecen en cero / sin registro; no deben interpretarse automáticamente como gasto real cero.</li><li>La cobertura se presenta como Real / Previsión. Un valor superior al 100% indica que la provisión supera la previsión de cierre.</li><li>El desglose por proveedor mostrado corresponde a la provisión de octubre; las categorías conservan los nombres del archivo.</li></ul></div>
+<footer>Dashboard elaborado a partir del archivo proporcionado · MiFibra · CX & Mensajería 2026</footer>
+</main>
+<script>
+const D={"months": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"], "provision": {"CX": [333588.692, 336313.692, 341600.4, 485045.810876, 417647.994636, 433404.289, 434523.32, 385276.0, 406859.0, 454859.0, 0.0, 0.0], "Cobranza y fidelización": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 153840.535102, 209938.0, 204359.27257756, 125700.0, 0.0, 0.0], "Total": [333588.692, 336313.692, 341600.4, 485045.810876, 417647.994636, 433404.289, 588363.8551020001, 595214.0, 611218.27257756, 580559.0, 0.0, 0.0]}, "forecast": {"CX": [333588.692, 336313.692, 341600.4, 485045.810876, 417647.994636, 433404.289, 379666.179024794, 388463.3968883987, 390910.3134068144, 354314.4388951624, 343336.449279618, 348020.51502485503], "Cobranza y fidelización": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 182322.1788, 96111.33774, 96319.40462700001, 96537.87485835, 96767.2686012675, 97008.13203133088], "Total": [333588.692, 336313.692, 341600.4, 485045.810876, 417647.994636, 433404.289, 561988.357824794, 484574.73462839867, 487229.71803381445, 450852.31375351246, 440103.71788088547, 445028.64705618593]}, "coverage": {"CX": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.1444878264271823, 0.9917948591452121, 1.0407988381124855, 1.2837721246087506, null, null], "Cobranza y fidelización": [null, null, null, null, null, null, 0.8437839878534843, 2.1843208609573557, 2.121683303265296, 1.4122346509081853, null, null], "Total": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.046932462051872, 1.228322397898946, 1.2544765845648616, 1.311278913216832, null, null]}, "prov_oct": {"Konecta": 282614.0, "Bolsa minutos": 14000.0, "Genesys": 86000.0, "SMS y Wpp": 0, "Laser (Call Center)": 0, "OneMarketer": 72245.0, "Cobranza - Konecta": 0, "Cobranza - Laser": 30000.0, "Cobranza - Bolsa minutos": 3000.0, "Cobranza - Genesys": 4000.0, "Mensajería y otros": 88700.0}, "detail_by_month":{"Ene": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [258650.0, 13153.392, 61785.3, 0, 0, 0, 0, 0, 0, 0, 0]}, "Feb": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [243810.0, 17953.392, 74550.3, 0, 0, 0, 0, 0, 0, 0, 0]}, "Mar": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [235560.0, 24000.0, 82040.40000000001, 0, 0, 0, 0, 0, 0, 0, 0]}, "Abr": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [278000.0, 17953.392, 74550.3, 114542.118876, 0, 0, 0, 0, 0, 0, 0]}, "May": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [284475.2, 17953.392, 74550.3, 40669.102636, 0, 0, 0, 0, 0, 0, 0]}, "Jun": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [310793.0, 18000.0, 66000.0, 38611.289, 0.0, 0, 0, 0, 0, 0, 0]}, "Jul": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [349447.0, 14400.0, 70676.31999999999, 0, 0, 0, 12657.0, 47319.0, 3000.0, 7852.546899999999, 83011.98820200001]}, "Ago": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [292276.0, 14000.0, 79000.0, 0, 0, 0, 46959.0, 35985.0, 3000.0, 4000.0, 119994.0]}, "Set": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [282614.0, 14000.0, 86000.0, 0, 0, 24245.0, 0, 64404.0, 3000.0, 4000.0, 132955.27257756]}, "Oct": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [282614.0, 14000.0, 86000.0, 0, 0, 72245.0, 0, 30000.0, 3000.0, 4000.0, 88700.0]}, "Nov": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, "Dic": {"labels": ["Konecta", "Bolsa Minutos", "Genesys", "SMS y Wpp", "Laser (Call Center)", "OneMarketer", "Cobranza - Konecta", "Cobranza - Laser", "Cobranza - Bolsa Minutos", "Cobranza - Genesys", "Cobranza - Mensajería y otros"], "values": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}, "notes": ["Debimos botear mas de cara a octubre; pero el bot se paralizo por los costos de meta. No avanzamos con mas flujos a botear", "Sobre costo por meta en Octubre y  en adelante estará el costo de live chat"]};
+const fmt=n=>new Intl.NumberFormat('es-PE',{style:'currency',currency:'PEN',maximumFractionDigits:0}).format(n||0);
+const pct=n=>n==null?'—':(n*100).toFixed(1)+'%';
+// Etiquetas permanentes: muestra el valor de cada punto/barra/segmento sin depender del tooltip.
+const valueLabels={
+ id:'valueLabels',
+ afterDatasetsDraw(chart){
+  const {ctx}=chart; const id=chart.canvas.id;
+  ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle';
+  chart.data.datasets.forEach((ds,di)=>{
+   const meta=chart.getDatasetMeta(di); if(meta.hidden) return;
+   meta.data.forEach((el,idx)=>{
+    const raw=ds.data[idx]; if(raw===null||raw===undefined||!Number.isFinite(Number(raw))) return;
+    let label='',x,y;
+    if(id==='trendChart'){
+     label=(Number(raw)/1000).toFixed(0)+'k';
+     const pos=el.tooltipPosition(); x=pos.x; y=pos.y+(di===0?-13:14);
+     ctx.font='600 9px Segoe UI,Arial'; ctx.fillStyle=di===0?'#b00063':'#14243a';
+    } else if(id==='coverageChart'){
+     label=Number(raw).toFixed(0)+'%'; const pos=el.tooltipPosition(); x=pos.x; y=pos.y-10;
+     ctx.font='600 9px Segoe UI,Arial'; ctx.fillStyle='#14243a';
+    } else if(id==='detailChart'){
+     label='S/ '+(Number(raw)/1000).toFixed(1)+'k'; const pos=el.tooltipPosition(); x=pos.x+30; y=pos.y;
+     ctx.font='600 9px Segoe UI,Arial'; ctx.textAlign='left'; ctx.fillStyle='#14243a';
+    } else if(id==='mixChart'){
+     const arc=el; const angle=(arc.startAngle+arc.endAngle)/2; const radius=(arc.innerRadius+arc.outerRadius)/2;
+     x=arc.x+Math.cos(angle)*radius; y=arc.y+Math.sin(angle)*radius;
+     const short=chart.data.labels[idx]==='Cobranza y fidelización'?'Cobranza':'CX';
+     label=short+'\nS/ '+(Number(raw)/1000).toFixed(0)+'k';
+     ctx.font='700 9px Segoe UI,Arial'; ctx.fillStyle='#14243a';
+    }
+    if(id==='mixChart'){
+     // Etiquetas en pastilla blanca para mantener contraste sobre ambos segmentos
+     // y cuando el texto se aproxima al espacio blanco del centro/exterior.
+     ctx.textAlign='center'; ctx.textBaseline='middle';
+     const lines=label.split('\\n');
+     const lineHeight=11, padX=5, padY=4;
+     const widths=lines.map(line=>ctx.measureText(line).width);
+     const boxW=Math.max(...widths)+padX*2, boxH=lines.length*lineHeight+padY*2;
+     const left=x-boxW/2, top=y-boxH/2;
+     ctx.fillStyle='rgba(255,255,255,0.94)';
+     ctx.beginPath(); ctx.roundRect(left,top,boxW,boxH,5); ctx.fill();
+     ctx.fillStyle='#14243a';
+     lines.forEach((line,j)=>ctx.fillText(line,x,y+(j-(lines.length-1)/2)*lineHeight));
+    } else { ctx.fillText(label,x,y); ctx.textAlign='center'; }
+   });
+  });
+  ctx.restore();
+ }
+};
+Chart.register(valueLabels);
+
+const valid=(a)=>a.map(x=>x==null?null:x);
+const sel=document.getElementById('monthSelect');
+D.months.forEach((m,i)=>{let o=document.createElement('option');o.value=i;o.textContent=m;sel.appendChild(o)});
+sel.value=9;
+let trend,mix,cov,detail;
+function chartBase(){return {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#edf0f4'},ticks:{font:{size:10},callback:v=>'S/ '+(v/1000).toFixed(0)+'k'}}}}}
+function draw(){
+ const i=+sel.value, a=D.provision.Total[i], f=D.forecast.Total[i], c=D.coverage.Total[i], diff=(a||0)-(f||0);
+ document.getElementById('kpiActual').textContent=(a||0)?fmt(a):'Sin registro';
+ document.getElementById('kpiForecast').textContent=fmt(f);
+ document.getElementById('kpiVariance').textContent=(a||0)?((diff>=0?'+':'')+fmt(diff)):'—';
+ document.getElementById('varianceFoot').textContent=(a||0)?(diff>=0?'Por encima de la previsión':'Por debajo de la previsión'):'No hay provisión reportada';
+ document.getElementById('kpiCoverage').textContent=pct(c);
+ const monthDetail=D.detail_by_month[D.months[i]];
+ detail.data.labels=monthDetail.labels;
+ detail.data.datasets[0].data=monthDetail.values;
+ detail.options.scales.x.suggestedMax=Math.max(...monthDetail.values,1)*1.12;
+ detail.update();
+ document.getElementById('detailSubtitle').textContent='Desglose de provisión de '+D.months[i]+' según el archivo fuente';
+ const cx=D.forecast.CX[i]||0, cob=D.forecast['Cobranza y fidelización'][i]||0;
+ if(mix)mix.destroy();
+ mix=new Chart(document.getElementById('mixChart'),{type:'doughnut',data:{labels:['CX','Cobranza y fidelización'],datasets:[{data:[cx,cob],backgroundColor:['#ff0091','#263d5b'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8}},tooltip:{callbacks:{label:x=>x.label+': '+fmt(x.raw)}}}}});
+}
+trend=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:D.months,datasets:[{label:'Provisión',data:valid(D.provision.Total),borderColor:'#ff0091',backgroundColor:'#ff0091',tension:.3,spanGaps:false,pointRadius:3},{label:'Previsión de cierre',data:D.forecast.Total,borderColor:'#263d5b',backgroundColor:'#263d5b',borderDash:[5,4],tension:.3,pointRadius:3}]},options:{...chartBase(),plugins:{...chartBase().plugins,tooltip:{callbacks:{label:x=>x.dataset.label+': '+fmt(x.raw)}}}}});
+cov=new Chart(document.getElementById('coverageChart'),{type:'bar',data:{labels:D.months,datasets:[{label:'Cobertura',data:D.coverage.Total.map(x=>x==null?null:x*100),backgroundColor:D.months.map((m,i)=>i===9?'#ff0091':'#9aa8ba'),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>x.raw.toFixed(1)+'%'}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,suggestedMax:150,ticks:{callback:v=>v+'%'}}}}});
+const initialDetail=D.detail_by_month[D.months[+sel.value]];
+detail=new Chart(document.getElementById('detailChart'),{type:'bar',data:{labels:initialDetail.labels,datasets:[{data:initialDetail.values,backgroundColor:'#ff0091',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>fmt(x.raw)}}},layout:{padding:{right:48}},scales:{x:{beginAtZero:true,grid:{color:'#edf0f4'},ticks:{callback:v=>'S/ '+(v/1000).toFixed(0)+'k'}},y:{grid:{display:false},ticks:{font:{size:9}}}}}});
+const tb=document.querySelector('#summaryTable tbody');
+D.months.forEach((m,i)=>{const a=D.provision.Total[i],f=D.forecast.Total[i],c=D.coverage.Total[i];let tr=document.createElement('tr');tr.innerHTML=`<td>${m}</td><td>${a?fmt(a):'—'}</td><td>${fmt(f)}</td><td>${a?((a-f>=0?'+':'')+fmt(a-f)):'—'}</td><td>${pct(c)}</td>`;tb.appendChild(tr)});
+const octA=D.provision.Total[9],octF=D.forecast.Total[9],octC=D.coverage.Total[9],yearF=D.forecast.Total.reduce((s,x)=>s+(x||0),0);
+const cards=[
+['Octubre supera la previsión',`La provisión de octubre fue ${fmt(octA)}, frente a una previsión de ${fmt(octF)}. La diferencia es ${fmt(octA-octF)} (${pct(octA/octF-1)} sobre la previsión).`],
+['Cobranza y fidelización gana peso',`En octubre la previsión de esta línea fue ${fmt(D.forecast['Cobranza y fidelización'][9])}, equivalente al ${(D.forecast['Cobranza y fidelización'][9]/octF*100).toFixed(1)}% del total previsto.`],
+['Mayor nivel de cobertura',`La cobertura acumulada reportada en el archivo es ${pct(D.coverage.Total[9] ? D.coverage.Total.slice(0,10).filter(x=>x!=null).reduce((s,x)=>s+x,0)/10 : null)} como promedio simple de enero a octubre. Octubre registra ${pct(octC)}.`]
+];
+document.getElementById('insights').innerHTML=cards.map(x=>`<div class="insight"><strong>${x[0]}</strong>${x[1]}</div>`).join('');
+sel.addEventListener('change',draw);draw();
+</script></body></html>
